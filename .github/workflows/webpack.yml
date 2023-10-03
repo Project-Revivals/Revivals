@@ -2,13 +2,13 @@ name: Build React on S3
 on:
   push:
       branches:
-        - master
+        - main
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@master  # リポジトリをチェックアウト
+        uses: actions/checkout@main  # リポジトリをチェックアウト
 
       - name: Install Dependencies
         run: npm install
