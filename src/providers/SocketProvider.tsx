@@ -1,3 +1,4 @@
+import React from "react";
 import { createContext, ReactNode, useContext } from "react";
 import { io, Socket } from "socket.io-client";
 import { SOCKET_URL } from './../config/default';
@@ -10,7 +11,7 @@ const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(SOCKET_URL
 
 /* Provider定義 */
 type Context = {
-    socket: Socket
+    socket: Socket<ServerToClientEvents, ClientToServerEvents>
 };
 
 const SocketContext = createContext<Context>({

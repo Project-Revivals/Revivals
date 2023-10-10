@@ -1,1 +1,1 @@
-export const SOCKET_URL: string = "localhost:3000"
+export const SOCKET_URL: string = "localhost:3000";

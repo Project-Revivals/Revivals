@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useEffect } from "react";
 import { useSockets } from "../../providers/SocketProvider";
 
@@ -7,18 +8,44 @@ export default function SocketTest(){
     const [messages, setMessages] = useState<string[]>([]);
     const [text, setText] = useState<string>("");
 
-    // 初回レンダリング時、socketのセットアップを行う
+    // コンポーネントが初回マウントされた際、socketに接続する
     useEffect(() => {
+        // サーバーへの接続を確認
         socket.on("connect", () => {
             console.log(`connect: ${socket.connected}`);
+            console.log("サーバーに接続しました");
         });
 
+        // 他ユーザーからmessageを受け取ったら、画面にmessageを追加する
         socket.on("responseMessage", (message) => {
             console.log(message);
+            addMessage(message);
         });
 
-        socket.emit("message", "hello world");
+        // クリーンアップ関数
+        return () => {
+            // コンポーネントがアンマウントされた際、socketから切断する
+            socket.disconnect();
+            console.log("サーバーへの接続を切断しました");
+        };
     }, []);
+
+
+    // 画面にmassageを追加する関数
+    function addMessage(message: string): void{
+        setMessages((prev) => [...prev, message]);
+    }
+
+    // 他ユーザーにmessageを送信する関数
+    function sendMessage(message: string): void{
+        socket.emit("sendMessage", message);
+    }
+
+    // input要素のvalueを、他ユーザーにmessageとして送信する関数
+    function handleSendButton(): void{
+        sendMessage(text);
+        setText(""); // ボタンがクリックされたらテキストをクリア
+    }
 
     return (
         <div>
@@ -31,14 +58,16 @@ export default function SocketTest(){
                 }}
             />
             <button
-                onClick={() => {
-
-                }}
+                onClick={handleSendButton}
             >
                 送信
             </button>
             <ul>
-                {messages.map()}
+                {messages.map((message, index) => (
+                    <li key={index}>
+                        <span>{message}</span>
+                    </li>
+                ))}
             </ul>
         </div>
     )
