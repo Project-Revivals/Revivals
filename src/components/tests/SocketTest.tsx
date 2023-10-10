@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useSockets } from "../../providers/SocketProvider";
 
 // websocketを試しに使ってみるためのコンポーネント
@@ -12,8 +11,11 @@ export default function SocketTest(){
     useEffect(() => {
         // サーバーへの接続を確認
         socket.on("connect", () => {
-            console.log(`connect: ${socket.connected}`);
-            console.log("サーバーに接続しました");
+            if(socket.connected){
+                console.log("サーバーに接続しました" + "\n" + `id: ${socket.id}`);
+            }else{
+                console.error("サーバーへの接続が失敗しました");
+            };
         });
 
         // 他ユーザーからmessageを受け取ったら、画面にmessageを追加する
