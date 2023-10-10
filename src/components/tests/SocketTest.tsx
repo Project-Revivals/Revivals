@@ -1,20 +1,19 @@
-import React, { useEffect } from "react";
-import { io, Socket } from "socket.io-client";
-import { ClientToServerEvents, ServerToClientEvents } from "./../../types/socketModels";
+import { useState, useEffect } from "react";
+import { useSockets } from "../../providers/SocketProvider";
 
 // websocketを試しに使ってみるためのコンポーネント
 export default function SocketTest(){
-    useEffect(() => {
-        const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
-            // サーバーのURLを指定
-            "http://localhost:3000"
-        );
+    const { socket } = useSockets();
+    const [messages, setMessages] = useState<string[]>([]);
+    const [text, setText] = useState<string>("");
 
+    // 初回レンダリング時、socketのセットアップを行う
+    useEffect(() => {
         socket.on("connect", () => {
-            console.log(socket.connected);
+            console.log(`connect: ${socket.connected}`);
         });
 
-        socket.on("hello", (message) => {
+        socket.on("responseMessage", (message) => {
             console.log(message);
         });
 
@@ -23,7 +22,24 @@ export default function SocketTest(){
 
     return (
         <div>
+            <input
+                type="text"
+                value={text}
+                onChange={(event) => {
+                    const newText: string = event.target.value;
+                    setText(newText);
+                }}
+            />
+            <button
+                onClick={() => {
 
+                }}
+            >
+                送信
+            </button>
+            <ul>
+                {messages.map()}
+            </ul>
         </div>
     )
 };
