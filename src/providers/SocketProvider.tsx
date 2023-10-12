@@ -12,7 +12,7 @@ type Context = {
     addMessage: (message: string) => void;
 };
 
-const SocketContext = createContext<Context>({
+export const SocketContext = createContext<Context>({
     socketRef: {} as React.MutableRefObject<Socket<ServerToClientEvents, ClientToServerEvents> | null>,
     messages: [],
     addMessage: (message: string) => {}
@@ -26,7 +26,6 @@ export default function SocketProvider({children}: {children: ReactNode}){
 
     /* useEffect等 */
     useEffect(() => {
-        console.log("サーバーに接続します");
         socketRef.current = io(SOCKET_URL);
         // サーバーへの接続を確認
         socketRef.current.on("connect", () => {
@@ -39,7 +38,7 @@ export default function SocketProvider({children}: {children: ReactNode}){
 
         // 他ユーザーからmessageを受け取ったら、画面にmessageを追加する
         socketRef.current.on("responseMessage", (message) => {
-            console.log(message);
+            console.log("送信しました\n"+message);
             addMessage(message);
         });
         
@@ -71,6 +70,3 @@ export default function SocketProvider({children}: {children: ReactNode}){
         </SocketContext.Provider>
     );
 };
-
-// useContextもいちいちSocketContextを渡すのが面倒なのでexportしておく
-export const useSockets = () => useContext(SocketContext);

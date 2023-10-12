@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useSockets } from "../../providers/SocketProvider";
+import React, { useState, useContext } from "react";
+import { SocketContext } from "../../providers/SocketProvider";
 
 // websocketを試しに使ってみるためのコンポーネント
 export default function SocketTest(){
@@ -7,7 +7,7 @@ export default function SocketTest(){
         socketRef,
         messages,
         addMessage
-    } = useSockets();
+    } = useContext(SocketContext);
 
     const [text, setText] = useState<string>("");
 
@@ -16,7 +16,8 @@ export default function SocketTest(){
         const socketInstance = socketRef.current;
         if(!socketInstance) return;
         socketInstance.emit("sendMessage", message); // 他ユーザーに送信
-        addMessage(message); // 自分の画面に追加
+        const myMessage: string = `You: ${message}`;
+        addMessage(myMessage); // 自分の画面に追加
     }
 
     // input要素のvalueを、他ユーザーにmessageとして送信する関数
