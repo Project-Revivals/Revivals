@@ -3,44 +3,20 @@ import { useSockets } from "../../providers/SocketProvider";
 
 // websocketを試しに使ってみるためのコンポーネント
 export default function SocketTest(){
-    const { socket } = useSockets();
-    const [messages, setMessages] = useState<string[]>([]);
+    const {
+        socketRef,
+        messages,
+        addMessage
+    } = useSockets();
+
     const [text, setText] = useState<string>("");
-
-    // コンポーネントが初回マウントされた際、socketに接続する
-    useEffect(() => {
-        // サーバーへの接続を確認
-        socket.on("connect", () => {
-            if(socket.connected){
-                console.log("サーバーに接続しました" + "\n" + `id: ${socket.id}`);
-            }else{
-                console.error("サーバーへの接続が失敗しました");
-            };
-        });
-
-        // 他ユーザーからmessageを受け取ったら、画面にmessageを追加する
-        socket.on("responseMessage", (message) => {
-            console.log(message);
-            addMessage(message);
-        });
-
-        // クリーンアップ関数
-        return () => {
-            // コンポーネントがアンマウントされた際、socketから切断する
-            socket.disconnect();
-            console.log("サーバーへの接続を切断しました");
-        };
-    }, []);
-
-
-    // 画面にmassageを追加する関数
-    function addMessage(message: string): void{
-        setMessages((prev) => [...prev, message]);
-    }
 
     // 他ユーザーにmessageを送信する関数
     function sendMessage(message: string): void{
-        socket.emit("sendMessage", message);
+        const socketInstance = socketRef.current;
+        if(!socketInstance) return;
+        socketInstance.emit("sendMessage", message); // 他ユーザーに送信
+        addMessage(message); // 自分の画面に追加
     }
 
     // input要素のvalueを、他ユーザーにmessageとして送信する関数
