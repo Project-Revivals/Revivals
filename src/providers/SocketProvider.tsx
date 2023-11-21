@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createContext, ReactNode, useContext, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { SOCKET_URL } from './../config/default';
-import { ClientToServerEvents, ServerToClientEvents } from "./../types/socketModels";
+import { ClientToServerEvents, Rooms, ServerToClientEvents } from "./../types/socketModels";
 
 
 /* Provider定義 */
@@ -23,30 +23,42 @@ export default function SocketProvider({children}: {children: ReactNode}){
     /* useState等 */
     const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null); // socketインスタンス
     const [messages, setMessages] = useState<string[]>([]);
+    const [roomIdList, setRoomIdList] = useState<string[]>([]);
 
     /* useEffect等 */
     useEffect(() => {
-        socketRef.current = io(SOCKET_URL);
+        // サーバーに接続する
+        const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(SOCKET_URL);
+        socketRef.current = socket;
+
         // サーバーへの接続を確認
-        socketRef.current.on("connect", () => {
-            if(socketRef.current?.connected){
-                console.log("サーバーに接続しました" + "\n" + `id: ${socketRef.current.id}`);
+        socket.on("connect", () => {
+            if(socket.connected){
+                console.log("サーバーに接続しました" + "\n" + `id: ${socket.id}`);
+                socket.emit("getRooms"); // サーバー接続時、ルーム一覧を取得する
             }else{
                 console.error("サーバーへの接続が失敗しました");
             };
         });
 
         // 他ユーザーからmessageを受け取ったら、画面にmessageを追加する
-        socketRef.current.on("responseMessage", (message) => {
+        socket.on("responseMessage", (message) => {
             console.log("送信しました\n"+message);
             addMessage(message);
         });
-        
+
+
+        /* ルーム関係の処理 */
+        // ルーム一覧を取得した際、stateで管理する
+        socket.on("getRooms", (newRoomIdList) => {
+            setRoomIdList(newRoomIdList);
+        });
+
         // クリーンアップ関数
         return () => {
-            if(!socketRef.current) return;
+            if(!socket) return;
             // コンポーネントがアンマウントされた際、socketから切断する
-            socketRef.current.disconnect();
+            socket.disconnect();
             socketRef.current = null;
             console.log("サーバーへの接続を切断しました");
         };
